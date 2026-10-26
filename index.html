@@ -114,6 +114,75 @@
       line-height: 1.6;
     }
 
+    
+#toast {
+  position: fixed;
+  top: 30px;
+  right: 30px;
+  min-width: 280px;
+  max-width: calc(100% - 40px);
+  padding: 16px 20px;
+  border-radius: 12px;
+  color: white;
+  background: #16a34a;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  animation: toast .3s ease;
+  overflow: hidden;
+}
+
+#toast p {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+#toast.success {
+  background: #16a34a;
+}
+
+#toast.error {
+  background: #dc2626;
+}
+
+#line {
+  height: 3px;
+  margin-top: 12px;
+  background: white;
+  animation: progress 5s linear forwards;
+}
+
+#toast.hide {
+  animation: hideToast .8s ease forwards;
+}
+
+@keyframes toast {
+  from {
+    transform: translateX(200px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes hideToast {
+  to {
+    transform: translateX(200px);
+    opacity: 0;
+  }
+}
+
+@keyframes progress {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+
     @media (max-width: 480px) {
       .container {
         padding: 35px 24px;
@@ -155,30 +224,84 @@
   </div>
 
   <script>
-    let move = true;
-    let i;
-    let btn = document.getElementById("btn");
+   
+let move = true;
+let i;
+let toastTimer;
+let btn = document.getElementById("btn");
 
-    btn.innerHTML = "logout";
+btn.innerHTML = "Logout";
 
-    function logout() {
-      btn.innerHTML = "Login";
-      move = false;
-      clearTimeout(i);
-      alert("you are inactive in 5 sec...!!!");
-    }
+function logout() {
+  if (!move) return;
 
-    function moved() {
-      if (!move) return;
-      clearTimeout(i);
-      i = setTimeout(() => {
-        logout();
-      }, 5000);
-    }
+  move = false;
+  clearTimeout(i);
+
+  btn.innerHTML = "Login";
+  toast("error", "You are inactive for 5 seconds!");
+}
+
+function moved() {
+  if (!move) return;
+
+  clearTimeout(i);
+
+  i = setTimeout(() => {
+    logout();
+  }, 5000);
+}
+
+function toast(type, msg) {
+  let oldToast = document.getElementById("toast");
+
+  if (oldToast) {
+    oldToast.remove();
+  }
+
+  clearTimeout(toastTimer);
+
+  let div = document.createElement("div");
+  div.id = "toast";
+  div.classList.add(type);
+
+  let p = document.createElement("p");
+  p.textContent = msg;
+
+  let divline = document.createElement("div");
+  divline.id = "line";
+
+  div.append(p, divline);
+  document.body.append(div);
+
+ 
+toastTimer = setTimeout(() => {
+  div.classList.add("hide");
+
+  setTimeout(() => {
+    div.remove();
+  }, 300);
+}, 5000);
+
+}
+
+btn.addEventListener("click", () => {
+  if (move) {
+    logout();
+  } else {
+    move = true;
+    btn.innerHTML = "Logout";
+
+    toast("success", "Login successful! Activity monitoring started.");
 
     moved();
+  }
+});
 
-    document.addEventListener("mousemove", moved);
+document.addEventListener("mousemove", moved);
+
+moved();
+
   </script>
 </body>
 </html>
